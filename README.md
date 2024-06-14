@@ -2,10 +2,10 @@
 
 Customer Churn Prediction
 
-Description
+Description:
 This project is designed to predict customer churn using logistic regression, a popular machine learning algorithm. Customer churn, or the likelihood of customers discontinuing their use of a service, is a critical metric for many businesses. Effective churn prediction can help companies take proactive measures to retain clients and better understand customer behaviors.
 
-Key Features
+Key Features:
 Data Preprocessing: Implements several preprocessing steps that are essential for machine learning models, including:
 
 Handling Missing Values: Automatically fills missing entries in the dataset to maintain data integrity.
