@@ -1,0 +1,53 @@
+# Imported libraries for data handling and machine learning
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, confusion_matrix
+
+# Load customer data from a CSV file into a DataFrame
+data = pd.read_csv('customer_churn.csv')
+
+# Display the first rows of the dataset to understand the structure and types of data it contains
+print("First few rows of the data:")
+print(data.head())
+
+# Display data types and missing values in the dataset
+print("\nData Information:")
+print(data.info())
+
+# Fill any missing values in the dataset with the median value of their respective columns
+data.fillna(data.median(), inplace=True)
+
+# Encode categorical data (e.g., names, types) to numeric values, as many machine learning models require numerical input
+for column in data.select_dtypes(include=['object']).columns:
+    data[column] = LabelEncoder().fit_transform(data[column])
+
+# Normalized the features to have a mean of 0 and a standard deviation of 1
+# This is often required to ensure all features contribute equally to the model's prediction
+features = data.drop('Churn', axis=1)  # Features (input)
+X = StandardScaler().fit_transform(features)
+
+# Define the target variable (what we want to predict)
+y = data['Churn']
+
+# Split the dataset into a training set and a testing set
+# 80% of the data will be used for training the model, 20% for evaluating the model
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Create a logistic regression model
+model = LogisticRegression()
+
+# Train the model using the training data
+model.fit(X_train, y_train)
+
+# Use the trained model to predict the outcome for the testing set
+y_pred = model.predict(X_test)
+
+# Calculate and print the accuracy of the model on the testing set
+accuracy = accuracy_score(y_test, y_pred)
+print(f'Accuracy: {accuracy:.2f}')  # Display the accuracy as a percentage
+
+# Generate and print a confusion matrix to evaluate the model's performance
+print("Confusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
