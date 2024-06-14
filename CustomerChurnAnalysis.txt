@@ -1,0 +1,77 @@
+# Import necessary libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, roc_auc_score, roc_curve
+
+# Load the data
+data = pd.read_csv('customer_churn.csv')
+
+# Display the first few rows and info about the data
+print("First few rows of the data:")
+print(data.head())
+print("\nData Information:")
+print(data.info())
+
+# Fill missing values with the median of each column
+data.fillna(data.median(), inplace=True)
+
+# Encode categorical variables
+label_encoders = {}
+for column in data.select_dtypes(include=['object']).columns:
+    le = LabelEncoder()
+    data[column] = le.fit_transform(data[column])
+    label_encoders[column] = le
+
+# Scale the features
+scaler = StandardScaler()
+features = data.drop('Churn', axis=1)
+scaled_features = scaler.fit_transform(features)
+scaled_data = pd.DataFrame(scaled_features, columns=features.columns)
+
+# Add the target variable back
+scaled_data['Churn'] = data['Churn']
+
+# Define features and target
+X = scaled_data.drop('Churn', axis=1)
+y = scaled_data['Churn']
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Train a logistic regression model
+model = LogisticRegression()
+model.fit(X_train, y_train)
+
+# Make predictions on the test set
+y_pred = model.predict(X_test)
+y_prob = model.predict_proba(X_test)[:, 1]
+
+# Evaluate the model
+accuracy = accuracy_score(y_test, y_pred)
+print(f'Accuracy: {accuracy:.2f}')
+print("Confusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+
+# Calculate and plot the ROC AUC score
+roc_auc = roc_auc_score(y_test, y_prob)
+fpr, tpr, _ = roc_curve(y_test, y_prob)
+plt.plot(fpr, tpr, label=f'ROC curve (area = {roc_auc:.2f})')
+plt.plot([0, 1], [0, 1], 'k--')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic (ROC) Curve')
+plt.legend(loc='lower right')
+plt.show()
+
+# Plot feature importance
+importance = model.coef_[0]
+feature_importances = pd.Series(importance, index=X.columns)
+feature_importances.sort_values().plot(kind='barh')
+plt.title('Feature Importance')
+plt.show()
